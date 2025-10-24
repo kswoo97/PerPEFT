@@ -4,16 +4,67 @@ This repository is an official implementation of PerPEFT, a personalized paramet
 
 The work has been submitted to The Web Conference 2026.
 
+----
+
 ### Datasets
 
 In this work, we use the four datasets from https://amazon-reviews-2023.github.io/.
 
 | Name | \# Users | \# Items |
 |:------|-------:|:----:|
-| Sports & Outdoors     | 12.3M  | 91.2 |
-| Toys & Games     | 8.7M   | 92.4 |
-| Beauty & Personal Care     | 8.7M   | 92.4 |
-| Arts, Crafts & Sewing    | 8.7M   | 92.4 |
+| Sports & Outdoors   | 25,363  | 15,701 |
+| Toys & Games   | 19,026   | 14,718 |
+| Beauty & Personal Care | 45,490  | 31,151 |
+| Arts, Crafts & Sewing    | 24,511 | 18,884 |
 
-The link
-https://www.dropbox.com/scl/fo/olpz13hyfcdn5jg6a4tzy/AN1Na5w_ySyO4nnYFyYnRpE?rlkey=5i6iyloeq9fpa48tz29ztmaqj&st=ibnulph8&dl=0
+The entire dataset, including (1) user-item interactions, (2) item images, and (3) item titles, is presented in the link below:
+- **Link**: https://www.dropbox.com/scl/fo/olpz13hyfcdn5jg6a4tzy/AN1Na5w_ySyO4nnYFyYnRpE?rlkey=5i6iyloeq9fpa48tz29ztmaqj&st=ibnulph8&dl=0
+- **Description**: Refer to the ```README.txt``` file within the link.
+
+----
+
+### Key packages
+
+Our implementation is conducted upon the following key packages:
+
+```
+python == 3.8.20
+pytorch == 1.12.1+cu113
+numpy == 1.24.3
+peft == 0.13.2
+transformers == 4.45.2
+```
+
+------
+
+
+### Code implementation
+
+In this work, we use three PEFT modules: (1) LoRA, (2) (IA)3, and (3) IISAN.
+
+LoRA and (IA)3 are supported by the ```peft``` package, while IISAN does not. Thus, they require a different implementation.
+
+- For LoRA, one can use the code below:
+```
+python3 perpeft_lora_ia3.py --dataset sports_outdoors --device cuda:0 --peft_type lora --wdecay 1e-4 --lr 1e-4
+```
+- For (IA)3, one can use the code below:
+```
+python3 perpeft_lora_ia3.py --dataset sports_outdoors --device cuda:0 --peft_type ia3 --wdecay 1e-4 --lr 1e-4
+```
+- For IISAN, one can use the code below:
+```
+python3 perpeft_iisan.py --dataset sports_outdoors --device cuda:0 --wdecay 1e-4 --lr 1e-4
+```
+
+Description for each hyperparameter is as follows:
+- ```--dataset``` indicates the target dataset one aims to use. One can choose: (1) sports_outdoors, (2) toys_games, (3) beauty_care, and (4) arts.
+- ```--device``` indicates the target GPU device one aims to use.
+- ```--wdecay``` indicates the coefficient for the weight normalization of the (1) PEFT modules and (2) backbone SASRec.
+- ```--lr```indicates the learning rate of the model for the training.
+
+----
+
+### Hyperparameter configurations
+
+One can refer to ```perpeft_hyperparameter.pickle``` for the optimal hyperparameter configuration of each model on each dataset.
