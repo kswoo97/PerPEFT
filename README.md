@@ -2,7 +2,12 @@
 
 This repository is an official implementation of PerPEFT, a personalized parameter-efficient fine-tuning method for multimodal recommendation.
 
-The work has been submitted to The Web Conference 2026.
+### Paper 
+
+- Title: ***PerPEFT: Personalized Parameter-Efficient Fine-Tuning of Foundation Models for Multimodal Recommendations***
+- Authors: Sunwoo Kim, Hyunjin Hwang, Kijung Shin
+- Venues: The Web Conference 2026 (WWW 2026)
+- Affiliation: KAIST AI
 
 ----
 
