@@ -26,6 +26,12 @@ The entire dataset, including (1) user-item interactions, (2) item images, and (
 - **Link**: https://www.dropbox.com/scl/fo/olpz13hyfcdn5jg6a4tzy/AN1Na5w_ySyO4nnYFyYnRpE?rlkey=5i6iyloeq9fpa48tz29ztmaqj&st=ibnulph8&dl=0
 - **Description**: Refer to the ```README.txt``` file within the link.
 
+Once you download the datasets in the above link, all files will be downloaded in ```mmrec_datasets.zip``` file.
+Then, locate the zip file in your directory, and run the below file to make the correct dataset directories:
+```
+Python3 unzip_data.py
+```
+
 ----
 
 ### Key packages
