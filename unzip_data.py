@@ -4,7 +4,7 @@ import zipfile
 if __name__ == "__main__" : 
 
     zip_path = Path("./mmrec_datasets.zip")
-    out_dir = Path("./datasets")
+    out_dir = Path("./dataset")
     
     out_dir.mkdir(parents=True, exist_ok=True)
     
@@ -17,8 +17,8 @@ if __name__ == "__main__" :
     
     for data_name in ["sports_outdoors", "toys_games", "beauty_care", "arts"] : 
     
-        zip_path = Path(f"./datasets/{data_name}_images.zip")
-        out_dir = Path(f"./datasets")
+        zip_path = Path(f"./dataset/{data_name}_images.zip")
+        out_dir = Path(f"./dataset")
         
         out_dir.mkdir(parents=True, exist_ok=True)
         
