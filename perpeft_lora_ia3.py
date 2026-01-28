@@ -15,8 +15,9 @@ from peft import PeftModel
 import hashlib
 
 from typing import Dict, Any
+from transformers import AutoFeatureExtractor, CLIPProcessor, CLIPModel
+from peft import get_peft_model, LoraConfig, TaskType, IA3Config
 
-from k_means_constrained import KMeansConstrained
 from sklearn.cluster import KMeans
 
 from perpeft_utils import *
@@ -145,7 +146,7 @@ if __name__ == '__main__':
         total_item_lists.append(idx2item[k])
 
 
-    for epoch in range(1, 11) : # 10 pre-training epochs ## 11
+    for epoch in range(1, inter_epoch + 1) : # 10 pre-training epochs ## 11
 
         pos_labels, neg_labels = torch.ones(5, device=args.device), torch.zeros(5, device=args.device)
 
@@ -339,7 +340,7 @@ if __name__ == '__main__':
     
     for t in range(args.C) :  ## Do this iteratively across clusters
 
-        u2i_index, i2u_index = build_index(args.dataset + "_{1}_{0}".format(t, args.peft_type)) # Load dataset accordingly to the clusters
+        # u2i_index, i2u_index = build_index(args.dataset + "_{1}_{0}".format(t, args.peft_type)) # Load dataset accordingly to the clusters
         tmp_dataset = data_partition(args.dataset + "_{1}_{0}".format(t, args.peft_type)) # Load dataset accordingly to the clusters
         
         [c_user_train, c_user_valid, c_user_test, c_usernum, c_itemnum] = tmp_dataset
