@@ -1,5 +1,3 @@
-### This version uses pre-defined embeddings
-
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"  # set this first
 
@@ -18,8 +16,8 @@ import math
 import torch
 from PIL import Image
 from transformers import AutoFeatureExtractor, CLIPProcessor, CLIPModel
+from peft import get_peft_model, LoraConfig, TaskType, IA3Config
 
-from peft import get_peft_model, LoraConfig, TaskType
 from tqdm import tqdm
 
 import torch.nn as nn
@@ -656,8 +654,8 @@ def evaluate_mm_valid(model, projector, dataset, args, total_item_lists,
             rated = set(train[u])
             rated.add(0)
     
-            item_idx = [test[u][0]]
-            item_idx = item_idx + list(total_items - {test[u][0]} - rated)
+            item_idx = [valid[u][0]]
+            item_idx = item_idx + list(total_items - {valid[u][0]} - rated)
     
             predictions = -model.predict(*[np.array(l) for l in [[u], [seq], item_idx]])
             predictions = predictions[0]
@@ -882,8 +880,8 @@ def evaluate_mm_ilsan_valid(model, projector, dataset, args, total_item_lists, i
             rated = set(train[u])
             rated.add(0)
     
-            item_idx = [test[u][0]]
-            item_idx = item_idx + list(total_items - {test[u][0]} - rated)
+            item_idx = [valid[u][0]]
+            item_idx = item_idx + list(total_items - {valid[u][0]} - rated)
     
             predictions = -model.predict(*[np.array(l) for l in [[u], [seq], item_idx]])
             predictions = predictions[0]
