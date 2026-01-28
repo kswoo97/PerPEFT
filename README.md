@@ -8,7 +8,7 @@ This repository is an official implementation of PerPEFT, a personalized paramet
 - Authors: Sunwoo Kim, Hyunjin Hwang, Kijung Shin
 - Venues: The Web Conference 2026 (WWW 2026)
 - Affiliation: KAIST AI
-
+  
 ----
 
 ### Datasets
@@ -40,10 +40,10 @@ Our implementation is conducted upon the following key packages:
 
 ```
 python == 3.8.20
-pytorch == 2.2.0+cu122
-numpy == 1.24.3
-peft == 0.13.2
-transformers == 4.45.2
+pytorch == 2.2.0+cu121
+numpy == 1.26.3
+peft == 0.18.1
+transformers == 4.49.0
 ```
 
 Note that several other versions are also compatible.
@@ -80,3 +80,10 @@ Description for each hyperparameter is as follows:
 ### Hyperparameter configurations
 
 One can refer to ```perpeft_hyperparameter.pickle``` for the optimal hyperparameter configuration of each model on each dataset.
+
+----
+
+### Questions
+
+- If you have any questions regarding our paper and/or code, feel free to reach me out!
+- You can either (1) contact me via ```kswoo97@kaist.ac.kr``` or (2) leave questions in the ```GitHub issue```.
