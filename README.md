@@ -27,9 +27,9 @@ The entire dataset, including (1) user-item interactions, (2) item images, and (
 - **Description**: Refer to the ```README.txt``` file within the link.
 
 Once you download the datasets in the above link, all files will be downloaded in ```mmrec_datasets.zip``` file.
-Then, locate the zip file in your directory, and run the below file to make the correct dataset directories:
+Then, locate the zip file in your directory, and run the file below to make the correct dataset directories:
 ```
-Python3 unzip_data.py
+python3 unzip_data.py
 ```
 
 ----
@@ -40,30 +40,31 @@ Our implementation is conducted upon the following key packages:
 
 ```
 python == 3.8.20
-pytorch == 1.12.1+cu113
+pytorch == 2.2.0+cu122
 numpy == 1.24.3
 peft == 0.13.2
 transformers == 4.45.2
 ```
 
+Note that several other versions are also compatible.
+Feel free to **leave any issues** caused by the package error.
+
 ------
 
 
-### Code implementation
+### How to run the code?
 
 In this work, we use three PEFT modules: (1) LoRA, (2) (IA)3, and (3) IISAN.
 
-LoRA and (IA)3 are supported by the ```peft``` package, while IISAN does not. Thus, they require a different implementation.
-
-- For LoRA, one can use the code below:
+- For LoRA (standard PEFT module), one can use the code below:
 ```
 python3 perpeft_lora_ia3.py --dataset sports_outdoors --device cuda:0 --peft_type lora --wdecay 1e-4 --lr 1e-4
 ```
-- For (IA)3, one can use the code below:
+- For (IA)3 (the strongest PEFT module in our setting), one can use the code below:
 ```
 python3 perpeft_lora_ia3.py --dataset sports_outdoors --device cuda:0 --peft_type ia3 --wdecay 1e-4 --lr 1e-4
 ```
-- For IISAN, one can use the code below:
+- For IISAN (the fastest PEFT module in our setting), one can use the code below:
 ```
 python3 perpeft_iisan.py --dataset sports_outdoors --device cuda:0 --wdecay 1e-4 --lr 1e-4
 ```
