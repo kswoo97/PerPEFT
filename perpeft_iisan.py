@@ -16,7 +16,6 @@ import hashlib
 
 from typing import Dict, Any
 
-from k_means_constrained import KMeansConstrained
 from sklearn.cluster import KMeans
 
 from perpeft_utils import *
@@ -54,13 +53,13 @@ parser.add_argument('--C', default=8, type=int)
 
 args = parser.parse_args()
 
-args.in_dim = 1024
+args.in_dim = 1792 ## Dimension of IISAN's input feature.
 
 if __name__ == '__main__':
     
     os.makedirs("pretrained_models", exist_ok=True)
     
-    inter_epoch = 1
+    inter_epoch = 10
     
     ##### Step 1: GLOBAL PEFT
     
@@ -99,7 +98,7 @@ if __name__ == '__main__':
     
     model_name = "openai/clip-vit-base-patch32"
     processor = CLIPProcessor.from_pretrained(model_name)
-    encoder = ILSAN(args.device).to(args.device)
+    encoder = IISAN(args.device).to(args.device)
 
     for name, param in model.named_parameters():
         try:
@@ -116,11 +115,11 @@ if __name__ == '__main__':
 
     bce_criterion = torch.nn.BCEWithLogitsLoss() # torch.nn.BCELoss()
 
-    adam_optimizer = torch.optim.AdamW(list(model.parameters()) + list(projector.parameters()), 
-                                       lr=args.lr, weight_decay = args.wdecay)
+    adam_optimizer = torch.optim.AdamW(list(model.parameters()) + list(projector.parameters()), lr=args.lr, 
+                                       weight_decay = args.wdecay)
 
-    backbone_optimizer = torch.optim.AdamW(list(filter(lambda p: p.requires_grad, encoder.parameters())), 
-                                           lr=args.lr, weight_decay = args.wdecay)
+    backbone_optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.lr, 
+                                           weight_decay = args.wdecay)
 
     total_item_lists = [0]
 
@@ -139,10 +138,7 @@ if __name__ == '__main__':
 
         torch.manual_seed(epoch)
 
-        for step in (range(num_batch)) : # tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
-
-            if step % 100 == 0 : 
-                print(step, num_batch)
+        for step in tqdm(range(num_batch)) : # tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
 
             model.train()
             encoder.train()
@@ -199,7 +195,7 @@ if __name__ == '__main__':
 
     total_items = set(range(1, itemnum + 1))
 
-    in_dim = 1024
+    in_dim = 1792
 
     sub_batches = sub_batch_generator(total_item_lists, 2048)
     TX = torch.zeros((len(total_item_lists), in_dim), dtype = torch.float32).to(device)
@@ -218,7 +214,7 @@ if __name__ == '__main__':
 
         print(len(sub_batches))
 
-        for idx, tmp_batch in tqdm(enumerate(sub_batches)) : 
+        for idx, tmp_batch in (enumerate(sub_batches)) : 
 
             new_mapper = [IlsanMapper[ii] for ii in tmp_batch]
             tmpimgX, tmptextX = TotalImageX[new_mapper, :, :], TotalTextX[new_mapper, :, :]
@@ -291,8 +287,6 @@ if __name__ == '__main__':
     
     ##### Step 3: Personalized PEFT
     
-    U2I_lists = []
-    I2U_lists = []
     Datasets = []
     Samplers = []
     
@@ -317,7 +311,7 @@ if __name__ == '__main__':
     model = SASRec(usernum, itemnum, args).to(args.device)
     
     model_param = torch.load(f"./pretrained_models/sasrec_{args.peft_type}_{args.dataset}_{inter_epoch}_{args.lr}_{args.wdecay}.pth")
-    model.load_state_dict(model_param)
+    model.load_state_dict(copy.deepcopy(model_param))
     
     all_projectors = []
     all_encoders = []
@@ -326,7 +320,6 @@ if __name__ == '__main__':
     
     for t in range(args.C) :  ## Do this iteratively across clusters
 
-        u2i_index, i2u_index = build_index(args.dataset + "_{1}_{0}".format(t, args.peft_type)) # Load dataset accordingly to the clusters
         tmp_dataset = data_partition(args.dataset + "_{1}_{0}".format(t, args.peft_type)) # Load dataset accordingly to the clusters
         
         [c_user_train, c_user_valid, c_user_test, c_usernum, c_itemnum] = tmp_dataset
@@ -336,26 +329,24 @@ if __name__ == '__main__':
             neg_lists.extend(c_user_train[user_neg_id])
         neg_lists = np.array(list(set(neg_lists)))
         
-        tmp_sampler = WarpSampler_clusterwise_negative(c_user_train, c_usernum, c_itemnum, batch_size=args.batch_size, maxlen=args.maxlen, n_workers=3, 
-                                   neg_lists = neg_lists)
+        tmp_sampler = WarpSampler_clusterwise_negative(c_user_train, c_usernum, c_itemnum, batch_size=args.batch_size, maxlen=args.maxlen, 
+                                                       n_workers=3, neg_lists = neg_lists)
+        
         c_batch = (len(c_user_train) - 1) // args.batch_size + 1
         n_batches[t] = c_batch
         print(c_batch)
         
-        U2I_lists.append(u2i_index)
-        I2U_lists.append(i2u_index)
         Datasets.append(tmp_dataset)
         Samplers.append(tmp_sampler)
         
         cur_projector = MMProjector(args).to(args.device)
         cur_proj_param = torch.load(f"./pretrained_models/projector_{args.peft_type}_{args.dataset}_{inter_epoch}_{args.lr}_{args.wdecay}.pth")
-        cur_projector.load_state_dict(cur_proj_param)
-            
+        cur_projector.load_state_dict(copy.deepcopy(cur_proj_param))
         all_projectors.append(cur_projector)
         
-        cur_encoder = ILSAN(args.device).to(args.device)
+        cur_encoder = IISAN(args.device).to(args.device)
         encoder_param = torch.load(f"./pretrained_models/encoder_{args.peft_type}_{args.dataset}_{inter_epoch}_{args.lr}_{args.wdecay}.pth")
-        cur_encoder.load_state_dict(encoder_param)
+        cur_encoder.load_state_dict(copy.deepcopy(encoder_param))
         all_encoders.append(cur_encoder)
     
     epoch_start_idx = 1
@@ -373,7 +364,7 @@ if __name__ == '__main__':
         all_enc_params += list(c_enc.parameters())
     
     adam_optimizer = torch.optim.AdamW(all_params, lr=args.lr, weight_decay = args.wdecay)
-    backbone_optimizer = torch.optim.AdamW(all_enc_params, lr=args.lr, weight_decay = args.wdecay) # 1e-4
+    backbone_optimizer = torch.optim.AdamW(all_enc_params, lr=args.lr, weight_decay = args.wdecay)
 
     best_val_ndcg, best_val_hr = 0.0, 0.0
     best_test_ndcg, best_test_hr = 0.0, 0.0
@@ -411,10 +402,7 @@ if __name__ == '__main__':
         np.random.seed(epoch)
         np.random.shuffle(batch_indexer)
         
-        for idid, t in enumerate(batch_indexer) : 
-            
-            if idid % 200 == 0 :
-                print(idid, batch_indexer.shape[0])
+        for idid, t in tqdm(enumerate(batch_indexer)) : 
 
             sampler = Samplers[t]
             encoder = all_encoders[t]
@@ -454,6 +442,10 @@ if __name__ == '__main__':
             for param in model.item_emb.parameters() : 
                 loss += args.l2_emb * torch.norm(param)
 
+            # loss.backward()
+            # adam_optimizer.step()
+            # backbone_optimizer.step()
+
             scaler.scale(loss).backward()
             safe_step(scaler, adam_optimizer)
             safe_step(scaler, backbone_optimizer)
@@ -462,9 +454,6 @@ if __name__ == '__main__':
             total_losses += loss.detach().cpu().item()
 
             del curX, pos_logits, neg_logits
-        
-        encoder.eval()
-        model.eval()
         
         V1 = 0.0
         V2 = 0.0
