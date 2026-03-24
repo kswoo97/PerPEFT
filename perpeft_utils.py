@@ -39,7 +39,7 @@ class ClusterwiseProjector(nn.Module) :  ## Below process
         
         return newx
 
-class ILSAN (nn.Module) :
+class IISAN (nn.Module) :
     
     def __init__(self, device):
         super().__init__()
